@@ -1,0 +1,105 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model cook_images {
+  id        Int    @id(map: "cook-images_pkey") @unique(map: "cook-images_id_key") @default(autoincrement())
+  productID Int
+  url       String
+  uniqueID  String
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model cook_orders {
+  id            Int         @id(map: "cook-units_pkey") @unique(map: "cook-units_id_key") @default(autoincrement())
+  paymentMethod String
+  totalAmount   Decimal     @db.Decimal
+  createdAt     DateTime?   @default(dbgenerated("(now() AT TIME ZONE 'utc'::text)")) @db.Timestamptz(6)
+  updatedAt     DateTime?   @default(dbgenerated("(now() AT TIME ZONE 'utc'::text)")) @db.Timestamptz(6)
+  userID        Int?
+  phone         String
+  email         String
+  name          String
+  street        String
+  postcode      String
+  town          String
+  unitsID       String
+  cook_users    cook_users? @relation(fields: [userID], references: [id], onUpdate: NoAction, map: "cook-units_userID_fkey")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model cook_products {
+  id          Int          @id(map: "cook-products_pkey") @unique(map: "cook-products_id_key") @default(autoincrement())
+  title       String
+  description String?
+  price       Decimal      @db.Decimal
+  quantity    Int          @db.SmallInt
+  image       String
+  category    String
+  createdAt   DateTime?    @default(dbgenerated("(now() AT TIME ZONE 'utc'::text)")) @db.Timestamptz(6)
+  uniqueID    String?
+  cook_units  cook_units[]
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model cook_units {
+  id            Int            @id(map: "cook-units_pkey1") @unique(map: "cook-units_id_key1") @default(autoincrement())
+  userID        Int?
+  orderID       String?
+  productID     Int?
+  quantity      Int            @db.SmallInt
+  processed     Boolean?       @default(false)
+  delivery      String?
+  uniqueID      String
+  paymentMethod String?
+  cook_products cook_products? @relation(fields: [productID], references: [id], onUpdate: NoAction, map: "cook-units_productID_fkey")
+  cook_users    cook_users?    @relation(fields: [userID], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "cook-units_userID_fkey1")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model cook_users {
+  id            Int             @id(map: "cook-users_pkey") @unique(map: "cook-users_id_key") @default(autoincrement())
+  firstName     String
+  lastName      String
+  username      String          @unique(map: "cook-users_username_key")
+  password      String
+  street        String
+  postcode      String
+  town          String
+  email         String
+  phone         String
+  admin         Boolean?        @default(false)
+  cook_articles cook_articles[]
+  cook_orders   cook_orders[]
+  cook_reviews  cook_reviews[]
+  cook_units    cook_units[]
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model cook_articles {
+  id         Int        @id @default(autoincrement())
+  title      String
+  category   String
+  createdAt  DateTime?  @default(dbgenerated("(now() AT TIME ZONE 'utc'::text)")) @db.Timestamptz(6)
+  userID     Int
+  content    Json       @db.Json
+  image      String
+  cook_users cook_users @relation(fields: [userID], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model cook_reviews {
+  id         Int        @id @default(autoincrement())
+  userID     Int
+  createdAt  DateTime?  @default(dbgenerated("(now() AT TIME ZONE 'utc'::text)")) @db.Timestamptz(6)
+  rating     Float      @db.Real
+  message    String?
+  cook_users cook_users @relation(fields: [userID], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}

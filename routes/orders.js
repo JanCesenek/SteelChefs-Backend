@@ -36,7 +36,7 @@ router
       });
     }
 
-    if (!data.userID || (user && data.userID === user.username) || req.token.admin) {
+    if (!data.userID || (user && data.userID === user.id) || req.token.admin) {
       const newOrder = await prisma.cook_orders.create({
         data,
       });

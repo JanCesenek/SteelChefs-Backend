@@ -17,7 +17,11 @@ router
   .route("/orders")
   .get(async (_, res) => {
     try {
-      const orders = await prisma.cook_orders.findMany();
+      const orders = await prisma.cook_orders.findMany({
+        orderBy: {
+          createdAt: "desc",
+        },
+      });
       res.json(orders);
     } catch (error) {
       console.error(error);

@@ -103,3 +103,125 @@ model cook_reviews {
   message    String?
   cook_users cook_users @relation(fields: [userID], references: [id], onDelete: Cascade, onUpdate: NoAction)
 }
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model social_blockList {
+  id                                                  Int          @id(map: "blockList_pkey") @unique(map: "blockList_id_key") @default(autoincrement())
+  blocker                                             Int
+  blocked                                             Int
+  social_users_social_blockList_blockedTosocial_users social_users @relation("social_blockList_blockedTosocial_users", fields: [blocked], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "blockList_blocked_fkey")
+  social_users_social_blockList_blockerTosocial_users social_users @relation("social_blockList_blockerTosocial_users", fields: [blocker], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "blockList_blocker_fkey")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model social_comments {
+  id           Int          @id(map: "comments_pkey") @unique(map: "comments_id_key") @default(autoincrement())
+  postID       Int
+  userID       Int
+  image        String?      @db.VarChar
+  message      String?      @db.VarChar
+  createdAt    DateTime?    @default(now()) @db.Timestamptz(6)
+  social_posts social_posts @relation(fields: [postID], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "comments_postID_fkey")
+  social_users social_users @relation(fields: [userID], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "comments_userID_fkey")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model social_dislikes {
+  id           Int          @id(map: "dislikes_pkey") @unique(map: "dislikes_id_key") @default(autoincrement())
+  postID       Int
+  userID       Int
+  social_posts social_posts @relation(fields: [postID], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "dislikes_postID_fkey")
+  social_users social_users @relation(fields: [userID], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "dislikes_userID_fkey")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model social_friendList {
+  id                                                      Int          @id(map: "friendlist_pkey") @unique(map: "friendlist_id_key") @default(autoincrement())
+  firstUser                                               Int
+  secondUser                                              Int
+  social_users_social_friendList_firstUserTosocial_users  social_users @relation("social_friendList_firstUserTosocial_users", fields: [firstUser], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "friendList_firstUser_fkey")
+  social_users_social_friendList_secondUserTosocial_users social_users @relation("social_friendList_secondUserTosocial_users", fields: [secondUser], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "friendList_secondUser_fkey")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model social_friendRequests {
+  id                                                         Int          @id(map: "friendRequests_pkey") @unique(map: "friendRequests_id_key") @default(autoincrement())
+  sender                                                     Int
+  recipient                                                  Int
+  social_users_social_friendRequests_recipientTosocial_users social_users @relation("social_friendRequests_recipientTosocial_users", fields: [recipient], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "friendRequests_recipient_fkey")
+  social_users_social_friendRequests_senderTosocial_users    social_users @relation("social_friendRequests_senderTosocial_users", fields: [sender], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "friendRequests_sender_fkey")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model social_likes {
+  id           Int          @id(map: "likes_pkey") @unique(map: "likes_id_key") @default(autoincrement())
+  postID       Int
+  userID       Int
+  social_posts social_posts @relation(fields: [postID], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "likes_postID_fkey")
+  social_users social_users @relation(fields: [userID], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "likes_userID_fkey")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model social_messages {
+  id                                                     Int          @id(map: "messages_pkey") @unique(map: "messages_id_key") @default(autoincrement())
+  senderID                                               Int
+  recipientID                                            Int
+  message                                                String?      @db.VarChar
+  image                                                  String?      @db.VarChar
+  createdAt                                              DateTime     @default(now()) @db.Timestamptz(6)
+  read                                                   Boolean      @default(false)
+  social_users_social_messages_recipientIDTosocial_users social_users @relation("social_messages_recipientIDTosocial_users", fields: [recipientID], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "messages_recipientID_fkey")
+  social_users_social_messages_senderIDTosocial_users    social_users @relation("social_messages_senderIDTosocial_users", fields: [senderID], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "messages_senderID_fkey")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model social_posts {
+  id                                               Int               @id(map: "posts_pkey") @unique(map: "posts_id_key") @default(autoincrement())
+  userID                                           Int
+  message                                          String            @db.VarChar
+  image                                            String?           @db.VarChar
+  createdAt                                        DateTime          @default(now()) @db.Timestamptz(6)
+  updatedAt                                        DateTime          @default(now()) @db.Timestamptz(6)
+  shared                                           Boolean?          @default(false)
+  sharedBy                                         Int?
+  sharedMessage                                    String?           @db.VarChar
+  social_comments                                  social_comments[]
+  social_dislikes                                  social_dislikes[]
+  social_likes                                     social_likes[]
+  social_users_social_posts_sharedByTosocial_users social_users?     @relation("social_posts_sharedByTosocial_users", fields: [sharedBy], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "posts_sharedBy_fkey")
+  social_users_social_posts_userIDTosocial_users   social_users      @relation("social_posts_userIDTosocial_users", fields: [userID], references: [id], onDelete: Cascade, onUpdate: NoAction, map: "posts_userID_fkey")
+}
+
+/// This model contains row level security and requires additional setup for migrations. Visit https://pris.ly/d/row-level-security for more info.
+model social_users {
+  id                                                                  Int                     @id(map: "users_pkey") @unique(map: "users_id_key") @default(autoincrement())
+  firstName                                                           String                  @db.VarChar
+  lastName                                                            String                  @db.VarChar
+  username                                                            String                  @unique(map: "users_username_key") @db.VarChar
+  password                                                            String                  @db.VarChar
+  gender                                                              users_gender?           @default(M)
+  race                                                                String                  @db.VarChar
+  birthDate                                                           DateTime                @db.Date
+  occupation                                                          String                  @db.VarChar
+  profilePicture                                                      String?                 @db.VarChar
+  origin                                                              String                  @db.VarChar
+  admin                                                               Boolean?                @default(false)
+  social_blockList_social_blockList_blockedTosocial_users             social_blockList[]      @relation("social_blockList_blockedTosocial_users")
+  social_blockList_social_blockList_blockerTosocial_users             social_blockList[]      @relation("social_blockList_blockerTosocial_users")
+  social_comments                                                     social_comments[]
+  social_dislikes                                                     social_dislikes[]
+  social_friendList_social_friendList_firstUserTosocial_users         social_friendList[]     @relation("social_friendList_firstUserTosocial_users")
+  social_friendList_social_friendList_secondUserTosocial_users        social_friendList[]     @relation("social_friendList_secondUserTosocial_users")
+  social_friendRequests_social_friendRequests_recipientTosocial_users social_friendRequests[] @relation("social_friendRequests_recipientTosocial_users")
+  social_friendRequests_social_friendRequests_senderTosocial_users    social_friendRequests[] @relation("social_friendRequests_senderTosocial_users")
+  social_likes                                                        social_likes[]
+  social_messages_social_messages_recipientIDTosocial_users           social_messages[]       @relation("social_messages_recipientIDTosocial_users")
+  social_messages_social_messages_senderIDTosocial_users              social_messages[]       @relation("social_messages_senderIDTosocial_users")
+  social_posts_social_posts_sharedByTosocial_users                    social_posts[]          @relation("social_posts_sharedByTosocial_users")
+  social_posts_social_posts_userIDTosocial_users                      social_posts[]          @relation("social_posts_userIDTosocial_users")
+}
+
+enum users_gender {
+  M
+  F
+}
